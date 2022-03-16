@@ -24,7 +24,7 @@
         <div class="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center py-4 sm:pt-0">
             <div style="width: 30rem; padding:3rem; background-color:white;">
                 <h1>Login</h1>
-                <input class="border:1px solid black" type="text" id="token">
+                <input style="border:1px solid black" type="text" id="token">
                 <button id="submit">Send</button>
             </div>
         </div>
