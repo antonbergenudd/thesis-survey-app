@@ -46,8 +46,7 @@ Route::get('/', function (Request $request) {
 })->middleware(EnsureTokenIsValid::class);
 
 Route::post('/article', function (Request $request) {
-    // TODO: Set iteration number here
-    $iteration = 1;
+    $iteration = env('ITERATION');
 
     $user = User::where('token', $request->token)->first();
     $article = Article::find($request->id);
