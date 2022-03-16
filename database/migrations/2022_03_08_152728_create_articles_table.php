@@ -18,7 +18,7 @@ class CreateArticlesTable extends Migration
             $table->string('title');
             $table->text('content');
             $table->text('sum_content');
-            $table->string('label_dist');
+            $table->text('label_dist');
             $table->string('date');
             $table->timestamps();
         });
