@@ -41,26 +41,28 @@ class CalculateProfiles extends Command
         $users = User::all();
 
         foreach($users as $user) {
-            $all_label_distributions = json_decode($user->articles()->where('relevant', 1)->pluck('label_dist'));
-            $sum_label_dist = [];
-            foreach($all_label_distributions as $i => $label_dist) {
-                $values = json_decode($label_dist);
-
-                foreach($values as $j => $value) {
-                    if(isset($sum_label_dist[$j])) {
-                        $sum_label_dist[$j] += $value;
+            $articles = $user->articles;
+            
+            // Loop all articles and compute average label dist for user profile
+            $col_label_dist = [];
+            foreach($articles as $i => $article) {
+                $label_dist = json_decode($article->label_dist);
+    
+                // Add each weighetd label distribution over an article to collected array (rel score * single label dist)
+                foreach($label_dist as $j => $val) {
+                    if(isset($col_label_dist[$j])) {
+                        $col_label_dist[$j] += $val * (($article->pivot->relevance - 1) / 4); // - 1 to get lowest value 0 (if not relevant at all)
                     } else {
-                        $sum_label_dist[$j] = $value;
+                        $col_label_dist[$j] = $val * (($article->pivot->relevance - 1) / 4); // divided by 4 because 5 (-1) is max val
                     }
                 } 
             }
-
-            $normalized_dist = array_map(function($dist) use ($all_label_distributions) { return $dist / count($all_label_distributions); }, $sum_label_dist);
-
-            $user->profile = $normalized_dist;
+    
+            // Get average percentage over all articles
+            $user->profile = array_map(function($val) use ($articles) { return $val / count($articles); }, $col_label_dist);
             $user->save();
         }
 
-        return 0;
+        return 1;
     }
 }

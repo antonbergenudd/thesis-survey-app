@@ -28,13 +28,25 @@ Route::get('/login', ['as' => 'login', 'uses' => function () {
     return view('login');
 }]);
 
+Route::post('/login', function (Request $request) {
+    $user = User::where('token', $request->token)->first();
+    if(isset($user)) {
+        $user->last_accessed = date("Y-m-d");
+        $user->save();
+
+        return $user->token;
+    }
+
+    return response()->json(['errors' => ['token' => ['The token is invalid.']]], 422);
+});
+
 /******************************************************************************************************************/
 /* User Routes */
 /******************************************************************************************************************/
 
 Route::get('/', function (Request $request) {
     $user = User::where('token', $request->token)->first();
-
+    
     $articles = Article::all();
     $answeredArticles = $user->articles()->get();
 
@@ -56,6 +68,17 @@ Route::post('/article', function (Request $request) {
     return 'OK';
 })->middleware(EnsureTokenIsValid::class);
 
+Route::post('/submit-answer', function (Request $request) {
+    $user = User::where('token', $request->token)->first();
+
+    foreach($request->data as $article) {
+        $db_article = Article::find($article['id']);
+        $db_article->users()->attach($user->id, ['relevance' => $article['rel'], 'understandability' => $article['und'], 'length' => $article['len']]);
+    }
+
+    return 'OK';
+})->middleware(EnsureTokenIsValid::class);
+
 
 /******************************************************************************************************************/
 /* Admin Routes */
@@ -65,37 +88,35 @@ Route::get('/explore', function (Request $request) {
     $users = User::all();
     
     foreach($users as $user) {
-        if($request->iteration) {
-            $articles_data = json_decode($user->articles()->where('relevant', 1)->where('iteration', $request->iteration)->pluck('label_dist'));
-           
-            $user->relevant_articles = $user->articles()->where('relevant', 1)->where('iteration', $request->iteration)->count();
-            $user->non_relevant_articles = $user->articles()->where('relevant', 0)->where('iteration', $request->iteration)->count();
-            $user->total_articles = $user->articles()->where('iteration', $request->iteration)->count();
-        } else {
-            $articles_data = json_decode($user->articles()->where('relevant', 1)->pluck('label_dist'));
+        $articles = $request->iteration ? $user->articles()->where('iteration', $request->iteration)->get() : $user->articles;
+        
+        // Loop all articles and compute average label dist for user profile
+        $col_label_dist = [];
+        $col_under = 0;
+        $col_len = 0;
+        $col_rel = 0;
+        foreach($articles as $i => $article) {
+            $label_dist = json_decode($article->label_dist);
 
-            $user->relevant_articles = $user->articles()->where('relevant', 1)->count();
-            $user->non_relevant_articles = $user->articles()->where('relevant', 0)->count();
-            $user->total_articles = $user->articles()->count();
-        }
-
-        $label_dist = [];
-        foreach($articles_data as $i => $data) {
-            $values = json_decode($data);
-
-            // article 0 label 0 += value[0]
-            // article 0 label 1 += value[1]
-            foreach($values as $j => $value) {
-                if(isset($label_dist[$j])) {
-                    $label_dist[$j] += $value;
+            // Add each weighetd label distribution over an article to collected array (rel score * single label dist)
+            foreach($label_dist as $j => $val) {
+                if(isset($col_label_dist[$j])) {
+                    $col_label_dist[$j] += $val * (($article->pivot->relevance - 1) / 4);
                 } else {
-                    $label_dist[$j] = $value;
+                    $col_label_dist[$j] = $val * (($article->pivot->relevance - 1) / 4);
                 }
             } 
+
+            $col_under += $article->pivot->understandability;
+            $col_len += $article->pivot->length;
+            $col_rel += $article->pivot->relevance;
         }
 
-        $arr_mod = array_map( function($val) use ($articles_data) { return $val / count($articles_data); }, $label_dist);
-        $user->label_dist = $arr_mod;
+        // Get average percentage over all articles
+        $user->label_dist = array_map(function($val) use ($articles) { return $val / count($articles); }, $col_label_dist);
+        $user->understandability = $col_under / count($articles);
+        $user->length = $col_len / count($articles);
+        $user->relevance = $col_rel / count($articles);
     }
 
     return view('explore')->with('users', $users)->with('iteration', $request->iteration);

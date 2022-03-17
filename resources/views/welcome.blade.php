@@ -25,18 +25,48 @@
             body {
                 font-family: 'Nunito', sans-serif;
             }
+
+            .button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            }
         </style>
     </head>
     <body class="antialiased">
         <div style="display: flex; justify-content:center; align-items:center; flex-direction:column;" class="min-h-screen bg-gray-100 dark:bg-gray-900">
             @foreach($articles as $article)
-            <div data-parent style="max-width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
+            <div data-article="{{$article->id}}" style="max-width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
                 <h1 style="margin-top:0;">{{ $article->title }}</h1>
                 <p>{{ $article->sum_content }}</p>
-                <div style="display: flex;">
-                    <b>Var denna texten intressant för dig?</b>
-                    <button style="cursor:pointer; margin:0 1rem; padding: 0 1rem;" data-register-resp="1" data-register-resp-id="{{$article->id}}">Ja</button>
-                    <button style="cursor:pointer; padding: 0 1rem;" data-register-resp="0" data-register-resp-id="{{$article->id}}">Nej</button>
+                <div style="display: flex; flex-direction:column;">
+                    <b>Texten var relevant för mig.</b>
+                    <input data-article-relevance type="range" min="1" max="5" value="3" step="1">
+                    <div style="display: flex; justify-content:space-between;">
+                        <p style="margin:0;">Stämmer inte alls</p>
+                        <p style="margin:0;">Stämmer helt</p>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction:column; margin-top:1rem;">
+                    <b>Texten var förståelig.</b>
+                    <input data-article-understandability type="range" min="1" max="5" value="3" step="1">
+                    <div style="display: flex; justify-content:space-between;">
+                        <p style="margin:0;">Stämmer inte alls</p>
+                        <p style="margin:0;">Stämmer helt</p>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction:column; margin-top:1rem;">
+                    <b>Textens längd var lagom lång.</b>
+                    <input data-article-length type="range" min="1" max="5" value="3" step="1">
+                    <div style="display: flex; justify-content:space-between;">
+                        <p style="margin:0;">Stämmer inte alls</p>
+                        <p style="margin:0;">Stämmer helt</p>
+                    </div>
                 </div>
             </div>
             @endforeach
@@ -44,6 +74,8 @@
             @if(count($articles) == 0)
                 <h1 style="color:white">Tack för hjälpen!</h1>
                 <p style="color:white;">Du har inga fler artiklar idag.</p>
+            @else
+                <button data-register-resp class="button" style="cursor:pointer; margin:2rem 0; width:20rem; height:5rem;;">Skicka in svar</button>
             @endif
         </div>
     </body>
@@ -55,18 +87,29 @@
         });
         
         $('[data-register-resp]').on('click', (e) => {
-            var data = $(e.target).data('registerResp')
-            var id = $(e.target).data('registerRespId')
+            let articles = $('[data-article]');
+            let articleData = []
+            for(let i = 0; i < articles.length; i++) {
+                let article = articles[i];
+                let relevance = $($(article).find('[data-article-relevance]')[0]).val()
+                let id = $(article).data('article')
+                let understandability = $($(article).find('[data-article-understandability]')[0]).val()
+                let length = $($(article).find('[data-article-length]')[0]).val()
+
+                articleData.push({
+                    'id': id,
+                    'rel': relevance,
+                    'und': understandability,
+                    'len': length
+                });
+            }
 
             let searchParams = new URLSearchParams(window.location.search)
             let token = searchParams.get('token')
 
-            $.post(`/article`, {"resp": data, "token": token, "id": id});
-
-            $(e.target).closest('[data-parent]')[0].remove()
-
-            if($('[data-register-resp]').length == 0)
+            $.post('/submit-answer', {"data": articleData, "token": token}).then(() => {
                 window.location.reload();
+            });
         });
     </script>
 </html>

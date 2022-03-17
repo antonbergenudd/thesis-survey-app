@@ -41,18 +41,18 @@
                 <h3>Answer info</h3>
                 <table>
                     <tr>
-                        <td>Relevant articles</td>
-                        <td>Non-relevant articles</td>
-                        <td>Hit rate</td>
+                        <td>Avg. understandability</td>
+                        <td>Avg. length</td>
+                        <td>Avg. relevance</td>
                     </tr>
                     <tr>
-                        <td>{{$user->relevant_articles}}</td>
-                        <td>{{$user->non_relevant_articles}}</td>
-                        <td>{{($user->relevant_articles / $user->total_articles) *100}}%</td>
+                        <td>{{$user->understandability}}</td>
+                        <td>{{$user->length}}</td>
+                        <td>{{$user->relevance}}</td>
                     </tr>
                 </table>
 
-                <h3>Label dist</h3>
+                <h3>Label distribution</h3>
                 <table>
                     <tr>
                         @foreach($user->label_dist as $i => $label)

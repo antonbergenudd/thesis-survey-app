@@ -26,6 +26,6 @@ class User extends Authenticatable
      */
     public function articles()
     {
-        return $this->belongsToMany(Article::class)->withPivot('relevant', 'iteration');
+        return $this->belongsToMany(Article::class)->withPivot('relevance', 'understandability', 'length');
     }
 }

@@ -17,8 +17,9 @@ class CreateArticleUserTable extends Migration
             $table->id();
             $table->integer('article_id');
             $table->integer('user_id');
-            $table->integer('relevant');
-            $table->integer('iteration');
+            $table->integer('relevance');
+            $table->integer('understandability');
+            $table->integer('length');
             $table->timestamps();
         });
     }
