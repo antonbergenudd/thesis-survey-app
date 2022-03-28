@@ -64,6 +64,8 @@
     </body>
 
     @foreach($users as $user)
-        {!! $user->chart->script() !!}
+        @if($user->chart)
+            {!! $user->chart->script() !!}
+        @endif
     @endforeach
 </html>
