@@ -97,7 +97,7 @@ class User extends Authenticatable
         $articles = $iteration ? $user->answers()->get()->where('iteration_id', '<=', $iteration) : $user->answers;
         $num_topics = count(json_decode($articles->first()->label_dist));
         $user_profile = isset($user->profile) ? json_decode($user->profile) : array_fill(0, $num_topics, (100/$num_topics)/100);
-        $total_num_answers = len($articles);
+        $total_num_answers = count($articles);
         // Loop all articles and compute average label dist for user profile
         foreach($articles as $i => $article) {
             // Get article distribution
