@@ -51,14 +51,20 @@ class User extends Authenticatable
 
             // Add each weighted label distribution over an article to collected array (rel score * single label dist)
             $total_diff = [];
+
+            
             foreach($article_dist as $j => $single_topic_dist) {
                 // Get abs. difference between profiles
                 $diff = abs($user_profile[$j] - $single_topic_dist);
                 $total_diff[] = $diff;
 
+                // Decrease impact of articles the more you answer
+                // Roughly every other iteration (30 articles)
+                $gradient = $total_num_answers != 0 ? 1 / $total_num_answers % 30 : 1;
+
                 // Add weighted difference to user profile. This weight decides the impact of a single article.
-                $scale = [-0.25, -0.1, 0, 0.1, 0.25];
-                $weighted_diff = ($diff != 0 ? $diff * $scale[$article->pivot->relevance - 1] : 0);
+                $scale = [-0.75, -0.25, 0, 0.25, 0.75];
+                $weighted_diff = ($diff != 0 ? $diff * $scale[$article->pivot->relevance - 1] * $gradient : 0);
                 $user_profile[$j] += $weighted_diff;
 
                 // Prevent values above 100%
