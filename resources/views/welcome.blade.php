@@ -40,41 +40,60 @@
     </head>
     <body class="antialiased">
         <div style="display: flex; justify-content:center; align-items:center; flex-direction:column;" class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @foreach($articles as $article)
-            <div data-article="{{$article->id}}" style="max-width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
-                <h1 style="margin-top:0;">{{ $article->title }}</h1>
-                <p>{{ $article->sum_content }}</p>
-                <div style="display: flex; flex-direction:column;">
-                    <b>Texten var relevant för mig.</b>
-                    <input data-article-relevance type="range" min="1" max="5" value="3" step="1">
-                    <div style="display: flex; justify-content:space-between;">
-                        <p style="margin:0;">Stämmer inte alls</p>
-                        <p style="margin:0;">Stämmer helt</p>
-                    </div>
-                </div>
-                <div style="display: flex; flex-direction:column; margin-top:1rem;">
-                    <b>Texten var förståelig.</b>
-                    <input data-article-understandability type="range" min="1" max="5" value="3" step="1">
-                    <div style="display: flex; justify-content:space-between;">
-                        <p style="margin:0;">Stämmer inte alls</p>
-                        <p style="margin:0;">Stämmer helt</p>
-                    </div>
-                </div>
-                <div style="display: flex; flex-direction:column; margin-top:1rem;">
-                    <b>Textens längd var lagom lång.</b>
-                    <input data-article-length type="range" min="1" max="5" value="3" step="1">
-                    <div style="display: flex; justify-content:space-between;">
-                        <p style="margin:0;">Stämmer inte alls</p>
-                        <p style="margin:0;">Stämmer helt</p>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-
             @if(count($articles) == 0)
                 <h1 style="color:white">Tack för hjälpen!</h1>
                 <p style="color:white;">Du har inga fler artiklar idag.</p>
             @else
+                <div style="max-width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
+                    <h1 style="margin-top:0;">Instruktion</h1>
+                    <p>
+                        Värdena på alla sliders går mellan 1-5.
+                        <br>1: Stämmer inte alls
+                        <br>2: Stämmer inte
+                        <br>3: Ingen åsikt
+                        <br>4: Stämmer delvis
+                        <br>5: Stämmer helt
+                    </p>
+                    <div style="display: flex; flex-direction:column;">
+                        <input type="range" min="1" max="5" value="3" step="1">
+                        <div style="display: flex; justify-content:space-between;">
+                            <p style="margin:0;">1</p>
+                            <p style="margin:0;">5</p>
+                        </div>
+                    </div>
+                </div>
+
+                @foreach($articles as $article)
+                <div data-article="{{$article->id}}" data-article-iter="{{$article->iteration_id}}" style="max-width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
+                    <h1 style="margin-top:0;">{{ $article->title }}</h1>
+                    <p>{{ $article->sum_content }}</p>
+                    <div style="display: flex; flex-direction:column;">
+                        <b>Texten var relevant för mig.</b>
+                        <input data-article-relevance type="range" min="1" max="5" value="3" step="1">
+                        <div style="display: flex; justify-content:space-between;">
+                            <p style="margin:0;">Stämmer inte alls</p>
+                            <p style="margin:0;">Stämmer helt</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction:column; margin-top:1rem;">
+                        <b>Texten var förståelig.</b>
+                        <input data-article-understandability type="range" min="1" max="5" value="3" step="1">
+                        <div style="display: flex; justify-content:space-between;">
+                            <p style="margin:0;">Stämmer inte alls</p>
+                            <p style="margin:0;">Stämmer helt</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction:column; margin-top:1rem;">
+                        <b>Textens längd var lagom lång.</b>
+                        <input data-article-length type="range" min="1" max="5" value="3" step="1">
+                        <div style="display: flex; justify-content:space-between;">
+                            <p style="margin:0;">Stämmer inte alls</p>
+                            <p style="margin:0;">Stämmer helt</p>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+                
                 <button data-register-resp class="button" style="cursor:pointer; margin:2rem 0; width:20rem; height:5rem;;">Skicka in svar</button>
             @endif
         </div>
@@ -91,16 +110,19 @@
             let articleData = []
             for(let i = 0; i < articles.length; i++) {
                 let article = articles[i];
+
                 let relevance = $($(article).find('[data-article-relevance]')[0]).val()
-                let id = $(article).data('article')
                 let understandability = $($(article).find('[data-article-understandability]')[0]).val()
                 let length = $($(article).find('[data-article-length]')[0]).val()
+                let id = $(article).data('article')
+                let iter = $(article).data('articleIter')
 
                 articleData.push({
                     'id': id,
                     'rel': relevance,
                     'und': understandability,
-                    'len': length
+                    'len': length,
+                    'iter': iter
                 });
             }
 
@@ -109,6 +131,7 @@
 
             $.post('/submit-answer', {"data": articleData, "token": token}).then(() => {
                 window.location.reload();
+                $(e.target).hide();
             });
         });
     </script>

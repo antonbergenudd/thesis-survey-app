@@ -17,7 +17,7 @@ class CreateUsersTable extends Migration
             $table->id();
             $table->string('token');
             $table->string('email');
-            $table->string('profile')->nullable();
+            $table->text('profile')->nullable();
             $table->date('last_accessed')->nullable();
             $table->timestamps();
         });

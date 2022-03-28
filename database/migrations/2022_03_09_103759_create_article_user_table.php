@@ -20,7 +20,7 @@ class CreateArticleUserTable extends Migration
             $table->integer('relevance');
             $table->integer('understandability');
             $table->integer('length');
-            $table->timestamps();
+            $table->text('difference')->nullable();
         });
     }
 

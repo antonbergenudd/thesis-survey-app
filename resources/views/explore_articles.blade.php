@@ -21,10 +21,7 @@
         crossorigin="anonymous"></script>
 
         {{-- ChartScript --}}
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js" charset="utf-8">
-        </script>
-
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js" charset="utf-8"></script>
 
         <style>
             body {
@@ -39,23 +36,29 @@
             @else
             <h1 style="color:white;">All iterations</h1>
             @endif
-            @foreach($users as $user)
-            <div data-parent style="width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
-                <h1 style="margin-top:0;">{{ $user->token }}</h1>
-                
-                @if($user->understandability)
-                    <h3>Data</h3>
-                    <p>Avg. understandability: {{$user->understandability}}</p>
-                    <p>Avg. length: {{$user->length}}</p>
-                    <p>Avg. relevance: {{$user->relevance}}</p>
-                @else
-                    <p>Har ej svarat på några artiklar ännu.</p>
-                @endif
+            <p style="color:white;">{{count($articles)}} articles in total</p>
 
-                @if($user->chart)
-                    <h3>User profile</h3>
+            @if($articles->all_chart)
+            <div data-parent style="width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
+                @if($articles->all_chart)
+                    <h3>All articles combined profile</h3>
                     <div>
-                        {!! $user->chart->container() !!}
+                        {!! $articles->all_chart->container() !!}
+                    </div>
+                @endif
+            </div>
+            @endif
+
+            @foreach($articles as $article)
+            <div data-parent style="width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
+                <h1 style="margin-top:0;">ID {{ $article->id }}</h1>
+                <p style="margin-top:0;">{{ $article->title }}</p>
+                <p style="margin-top:0;">Iteration {{ $article->iteration_id }}</p>
+
+                @if($article->chart)
+                    <h3>Article profile</h3>
+                    <div>
+                        {!! $article->chart->container() !!}
                     </div>
                 @endif
             </div>
@@ -63,7 +66,11 @@
         </div>
     </body>
 
-    @foreach($users as $user)
-        {!! $user->chart->script() !!}
+    @foreach($articles as $article)
+        {!! $article->chart->script() !!}
     @endforeach
+
+    @if($articles->all_chart)
+        {!! $articles->all_chart->script() !!}
+    @endif
 </html>
