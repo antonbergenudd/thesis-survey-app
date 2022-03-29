@@ -56,7 +56,7 @@ class User extends Authenticatable
 
                 // Decrease impact of articles the more you answer
                 // Roughly every other iteration (30 articles)
-                $gradient = $total_num_answers != 0 ? 1 / $total_num_answers % 30 : 1;
+                $gradient = $total_num_answers >= 30 ? (1 / ($total_num_answers/30)) : 1;
 
                 // Add weighted difference to user profile. This weight decides the impact of a single article.
                 $scale = [-0.75, -0.25, 0, 0.25, 0.75];
@@ -91,6 +91,7 @@ class User extends Authenticatable
         }
 
         if ($update) {
+            
             // Update profile
             $user->profile = $user_profile;
             $user->save();
