@@ -37,7 +37,7 @@ class User extends Authenticatable
         return $this->belongsToMany(Article::class)->withPivot('relevance', 'understandability', 'length');
     }
 
-    private function calculateUserProfile($articles, $update) {
+    private function calculateUserProfile($user, $articles, $update) {
         $num_topics = count(json_decode($articles->first()->label_dist));
         $user_profile = isset($user->profile) ? json_decode($user->profile) : array_fill(0, $num_topics, (100/$num_topics)/100);
         $total_num_answers = count($articles);
@@ -106,7 +106,7 @@ class User extends Authenticatable
         $user = User::find($this->id);
         $rated_articles = $user->answers()->whereIn('article_id', $article_ids)->get();
 
-        $this->calculateUserProfile($rated_articles, 1);
+        $this->calculateUserProfile($user, $rated_articles, 1);
     }
 
     public function getProfile($iteration) {
@@ -115,6 +115,6 @@ class User extends Authenticatable
         $articles = $iteration ? $user->answers()->get()->where('iteration_id', '<=', $iteration) : $user->answers;
 
         // Return profile
-        return $this->calculateUserProfile($articles, 0);
+        return $this->calculateUserProfile($user, $articles, 0);
     }
 }
