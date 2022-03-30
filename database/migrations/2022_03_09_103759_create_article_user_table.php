@@ -21,6 +21,18 @@ class CreateArticleUserTable extends Migration
             $table->integer('understandability');
             $table->integer('length');
             $table->text('difference')->nullable();
+
+            $table->foreign('article_id')
+                ->references('id')
+                ->on('articles')
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
         });
     }
 
