@@ -31,46 +31,53 @@
     </head>
     <body class="antialiased">
         <div style="display: flex; justify-content:center; align-items:center; flex-direction:column;" class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @if($iteration)
-            <h1 style="color:white;">Iteration {{$iteration}}</h1>
-            @else
-            <h1 style="color:white;">All iterations</h1>
-            @endif
-            <p style="color:white;">{{count($articles)}} articles in total</p>
+            @if(count($articles) > 0)
+                @if($iteration)
+                    <h1 style="color:white;">Iteration {{$iteration}}</h1>
+                @else
+                    <h1 style="color:white;">All iterations</h1>
+                @endif
+                
+                <p style="color:white;">{{count($articles)}} articles in total</p>
 
-            @if($articles->all_chart)
-            <div data-parent style="width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
                 @if($articles->all_chart)
-                    <h3>All articles combined profile</h3>
-                    <div>
-                        {!! $articles->all_chart->container() !!}
-                    </div>
+                <div data-parent style="width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
+                    @if($articles->all_chart)
+                        <h3>All articles combined profile</h3>
+                        <div>
+                            {!! $articles->all_chart->container() !!}
+                        </div>
+                    @endif
+                </div>
                 @endif
-            </div>
+
+                @foreach($articles as $article)
+                <div data-parent style="width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
+                    <h1 style="margin-top:0;">ID {{ $article->id }}</h1>
+                    <p style="margin-top:0;">{{ $article->title }}</p>
+                    <p style="margin-top:0;">Iteration {{ $article->iteration_id }}</p>
+
+                    @if($article->chart)
+                        <h3>Article profile</h3>
+                        <div>
+                            {!! $article->chart->container() !!}
+                        </div>
+                    @endif
+                </div>
+                @endforeach
+            @else
+            <h1 style="color:white;">No articles in the given iteration</h1>
             @endif
-
-            @foreach($articles as $article)
-            <div data-parent style="width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
-                <h1 style="margin-top:0;">ID {{ $article->id }}</h1>
-                <p style="margin-top:0;">{{ $article->title }}</p>
-                <p style="margin-top:0;">Iteration {{ $article->iteration_id }}</p>
-
-                @if($article->chart)
-                    <h3>Article profile</h3>
-                    <div>
-                        {!! $article->chart->container() !!}
-                    </div>
-                @endif
-            </div>
-            @endforeach
         </div>
     </body>
 
-    @foreach($articles as $article)
-        {!! $article->chart->script() !!}
-    @endforeach
+    @if(count($articles) > 0)
+        @foreach($articles as $article)
+            {!! $article->chart->script() !!}
+        @endforeach
 
-    @if($articles->all_chart)
-        {!! $articles->all_chart->script() !!}
+        @if($articles->all_chart)
+            {!! $articles->all_chart->script() !!}
+        @endif
     @endif
 </html>
