@@ -15,8 +15,8 @@ class CreateArticleUserTable extends Migration
     {
         Schema::create('article_user', function (Blueprint $table) {
             $table->id();
-            $table->integer('article_id');
-            $table->integer('user_id');
+            $table->unsignedBigInteger('article_id');
+            $table->unsignedBigInteger('user_id');
             $table->integer('relevance');
             $table->integer('understandability');
             $table->integer('length');
