@@ -57,6 +57,7 @@ Route::get('/', function (Request $request) {
 
 Route::post('/submit-answer', function (Request $request) {
     $user = User::where('token', $request->token)->first();
+    
     $article_ids = [];
     foreach($request->data as $article) {
         $user->answers()->attach($article['id'], ['relevance' => $article['rel'], 'understandability' => $article['und'], 'length' => $article['len']]);
@@ -64,9 +65,7 @@ Route::post('/submit-answer', function (Request $request) {
     }
 
     // Update profile with new answers
-    $user->updateProfile($article_ids);
-    
-    return 'OK';
+    return $user->updateProfile($article_ids);
 })->middleware(EnsureTokenIsValid::class);
 
 
@@ -98,7 +97,9 @@ Route::get('/explore', function (Request $request) {
 
             # https://v6.charts.erik.cat/getting_started.html#screenshots
             # consoletvs/charts:6.*
-            $data = $user->getProfile($request->iteration);
+            $data = $request->iteration 
+                ? UserProfile::where('iteration_id', $request->iteration)->where('user_id', $user->id)->first() 
+                : UserProfile::where('user_id', $user->id)->sortByDesc('iteration_id')->first();
             $labelDistChart = new LabelDistChart;
             $labelDistChart->labels(array_keys($data));
             $labelDistChart->options([
@@ -167,7 +168,6 @@ Route::get('/explore/articles', function (Request $request) {
             ]);
         $allArticlesChart->dataset('Labels by distribution', 'bar', $data);
         $articles->all_chart = $allArticlesChart;
-
     }
 
     return view('explore_articles')->with('articles', $articles)->with('iteration', $request->iteration);

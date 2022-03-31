@@ -55,14 +55,23 @@ class User extends Authenticatable
     /**
      * Helper function to calculate updated user profile
      */
-    private function calculateUserProfile($user, $articles, $update) {
-        $num_topics = count(json_decode($articles->first()->label_dist));
-        $other_num_topics = $num_topics - 1;
-        $user_profile = isset($user->profile) ? json_decode($user->profile) : array_fill(0, $num_topics, (100/$num_topics)/100);
+    private function calculateUserProfile($user, $articles) {
+        $num_topics = count(json_decode($articles->first()->label_dist)); # Calc number of topics
+        $user_profile = UserProfile::where('user_id', $user->id)->sortByDesc('iteration_id')->first(); # Retrieve latest user profile
+        
+        # Init unit distributed user profile if not set before
+        if (! isset($user_profile))
+            $user_profile = array_fill(0, $num_topics, (100/$num_topics)/100);
+        
         $total_num_answers = count($articles);
+
+        $iteration = -1;
 
         // Loop all articles and compute average label dist for user profile
         foreach($articles as $i => $article) {
+
+            if($iteration == -1)
+                $iteration = $article->pivot->iteration_id;
 
             // Get article distribution
             $article_dist = json_decode($article->label_dist);
@@ -97,7 +106,7 @@ class User extends Authenticatable
                 }
 
                 // Calculate normalized difference
-                $normalized_weighted_diff = $weighted_diff / $other_num_topics;
+                $normalized_weighted_diff = $weighted_diff / ($num_topics - 1);
 
                 // Distribute normalized difference over all other values
                 foreach(array_keys($user_profile) as $key) {
@@ -137,23 +146,22 @@ class User extends Authenticatable
             }
 
             // Save difference for each article
-            if ($update) {
-                $article->pivot->difference = $total_diff;
-                $article->pivot->save();
-            }
+            $article->pivot->difference = $total_diff;
+            $article->pivot->save();
         }
-
-
-        if ($update) {
             
-            // Update profile
-            $user->profile = $user_profile;
-            $user->save();
+        // Update profile
+        // $user->profile = $user_profile;
+        // $user->save();
 
-            return "Distribution summary: ".(array_sum($user_profile) * 100)."%";
-        }
-        
-        return $user_profile;
+        // Add new profile log
+        $userProfile = new UserProfile;
+        $userProfile->user_id = $user_id;
+        $userProfile->profile = $user_profile;
+        $userProfile->iteration_id = $iteration;
+        $userProfile->save();
+
+        return "Distribution summary: ".(array_sum($user_profile) * 100)."%";
     }
 
     public function updateProfile($article_ids) {
@@ -161,15 +169,14 @@ class User extends Authenticatable
         $user = User::find($this->id);
         $rated_articles = $user->answers()->whereIn('article_id', $article_ids)->get();
 
-        $this->calculateUserProfile($user, $rated_articles, 1);
+        return $this->calculateUserProfile($user, $rated_articles);
     }
 
     public function getProfile($iteration) {
         // Get all rated articles
         $user = User::find($this->id);
-        $articles = $iteration ? $user->answers()->get()->where('iteration_id', '<=', $iteration) : $user->answers;
 
         // Return profile
-        return $this->calculateUserProfile($user, $articles, 0);
+        return UserProfile::where('iteration_id', $iteration)->where('user_id', $user->id)->first();
     }
 }
