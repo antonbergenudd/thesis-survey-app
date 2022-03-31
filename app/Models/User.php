@@ -30,6 +30,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Retrieve all articles related to user
+     */
+    public function iterationProfile($iteration)
+    {
+        return $this->hasMany(UserProfile::class)->where('iteration_id', $iteration)->first();
+    }
+
+    /**
+     * Retrieve all articles related to user
+     */
+    public function latestProfile()
+    {
+        return $this->hasMany(UserProfile::class)->sortByDesc('iteration_id')->first();
+    }
+
+    /**
     * Helper function to print summary of distribution
     */
     private function printBalance($user_profile, $b, $check) {
@@ -57,21 +73,16 @@ class User extends Authenticatable
      */
     private function calculateUserProfile($user, $articles) {
         $num_topics = count(json_decode($articles->first()->label_dist)); # Calc number of topics
-        $user_profile = UserProfile::where('user_id', $user->id)->sortByDesc('iteration_id')->first(); # Retrieve latest user profile
+        $iteration = $articles->first()->pivot->iteration_id; # Set iteration number
+        $total_num_answers = count($articles);
+        $user_profile = $user->latestProfile(); # Retrieve latest user profile
         
         # Init unit distributed user profile if not set before
         if (! isset($user_profile))
             $user_profile = array_fill(0, $num_topics, (100/$num_topics)/100);
-        
-        $total_num_answers = count($articles);
-
-        $iteration = -1;
 
         // Loop all articles and compute average label dist for user profile
         foreach($articles as $i => $article) {
-
-            if($iteration == -1)
-                $iteration = $article->pivot->iteration_id;
 
             // Get article distribution
             $article_dist = json_decode($article->label_dist);
@@ -149,12 +160,8 @@ class User extends Authenticatable
             $article->pivot->difference = $total_diff;
             $article->pivot->save();
         }
-            
-        // Update profile
-        // $user->profile = $user_profile;
-        // $user->save();
 
-        // Add new profile log
+        // Add updated user profile log
         $userProfile = new UserProfile;
         $userProfile->user_id = $user_id;
         $userProfile->profile = $user_profile;

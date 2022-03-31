@@ -98,8 +98,8 @@ Route::get('/explore', function (Request $request) {
             # https://v6.charts.erik.cat/getting_started.html#screenshots
             # consoletvs/charts:6.*
             $data = $request->iteration 
-                ? UserProfile::where('iteration_id', $request->iteration)->where('user_id', $user->id)->first() 
-                : UserProfile::where('user_id', $user->id)->sortByDesc('iteration_id')->first();
+                ? $user->iterationProfile($request->iteration)
+                : $user->latestProfile();
             $labelDistChart = new LabelDistChart;
             $labelDistChart->labels(array_keys($data));
             $labelDistChart->options([
