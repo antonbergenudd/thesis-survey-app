@@ -42,7 +42,7 @@ class User extends Authenticatable
      */
     public function latestProfile()
     {
-        return $this->hasMany(UserProfile::class)->sortByDesc('iteration_id')->first();
+        return $this->hasMany(UserProfile::class)->get()->sortByDesc('iteration_id')->first();
     }
 
     /**
@@ -73,14 +73,16 @@ class User extends Authenticatable
      */
     private function calculateUserProfile($user, $articles) {
         $num_topics = count(json_decode($articles->first()->label_dist)); # Calc number of topics
-        $iteration = $articles->first()->pivot->iteration_id; # Set iteration number
+        $iteration = $articles->first()->iteration_id; # Set iteration number
         $total_num_answers = count($articles);
         $user_profile = $user->latestProfile(); # Retrieve latest user profile
         
         # Init unit distributed user profile if not set before
         if (! isset($user_profile))
             $user_profile = array_fill(0, $num_topics, (100/$num_topics)/100);
-
+        else
+            $user_profile = json_decode($user_profile->profile);
+            
         // Loop all articles and compute average label dist for user profile
         foreach($articles as $i => $article) {
 
@@ -163,8 +165,8 @@ class User extends Authenticatable
 
         // Add updated user profile log
         $userProfile = new UserProfile;
-        $userProfile->user_id = $user_id;
-        $userProfile->profile = $user_profile;
+        $userProfile->user_id = $user->id;
+        $userProfile->profile = json_encode($user_profile);
         $userProfile->iteration_id = $iteration;
         $userProfile->save();
 

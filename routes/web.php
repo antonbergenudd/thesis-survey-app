@@ -78,7 +78,7 @@ Route::get('/explore', function (Request $request) {
     
     foreach($users as $user) {
         // Get all rated articles
-        $articles = $request->iteration ? $user->answers()->get()->where('iteration_id', $request->iteration) : $user->answers;
+        $articles = isset($request->iteration) ? $user->answers()->get()->where('iteration_id', $request->iteration) : $user->answers;
 
         if(count($articles) > 0) {
             // Loop all articles and compute average label dist for user profile
@@ -97,9 +97,10 @@ Route::get('/explore', function (Request $request) {
 
             # https://v6.charts.erik.cat/getting_started.html#screenshots
             # consoletvs/charts:6.*
-            $data = $request->iteration 
+            $data = isset($request->iteration) 
                 ? $user->iterationProfile($request->iteration)
                 : $user->latestProfile();
+            $data = json_decode($data->profile);
             $labelDistChart = new LabelDistChart;
             $labelDistChart->labels(array_keys($data));
             $labelDistChart->options([
@@ -122,7 +123,7 @@ Route::get('/explore', function (Request $request) {
 })->middleware(ValidateAdminIP::class);
 
 Route::get('/explore/articles', function (Request $request) {
-    $articles = $request->iteration ? Article::where('iteration_id', $request->iteration)->get() : Article::all();
+    $articles = isset($request->iteration) ? Article::where('iteration_id', $request->iteration)->get() : Article::all();
 
     if(count($articles) > 0) {
 
