@@ -26,15 +26,7 @@ class User extends Authenticatable
      */
     public function answers()
     {
-        return $this->belongsToMany(Article::class)->withPivot('relevance', 'understandability', 'length');
-    }
-
-    /**
-     * Retrieve specific iteration from user
-     */
-    public function iteration($iter)
-    {
-        return $this->belongsToMany(Article::class)->withPivot('relevance', 'understandability', 'length');
+        return $this->belongsToMany(Article::class)->withPivot('relevance', 'understandability', 'length', 'difference');
     }
 
     /**

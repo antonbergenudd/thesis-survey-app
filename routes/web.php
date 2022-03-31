@@ -8,6 +8,7 @@ use \App\Http\Middleware\ValidateAdminIP;
 use \Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use App\Jobs\Notify;
+use Response as r;
 use App\Charts\LabelDistChart;
 
 /*
@@ -172,36 +173,39 @@ Route::get('/explore/articles', function (Request $request) {
     return view('explore_articles')->with('articles', $articles)->with('iteration', $request->iteration);
 })->middleware(ValidateAdminIP::class);
 
-Route::get('/download/answers', function (Request $request) {
-
-    $fileName = $request->token.'_answers_'.$request->iteration.'.csv';
-    $user = User::where('token', $request->token)->first();
+Route::get('/export/answers', function (Request $request) {
+    $fileName = $request->iteration.'_answers.csv';
+    $users = User::all();
 
     $headers = array(
-        "Content-type"        => "text/csv",
-        "Content-Disposition" => "attachment; filename=$fileName",
-        "Pragma"              => "no-cache",
-        "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-        "Expires"             => "0"
+        'Content-Type' => 'application/vnd.ms-excel; charset=utf-8',
+        'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+        'Content-Disposition' => 'attachment; filename='.$fileName,
+        'Expires' => '0',
+        'Pragma' => 'public',
     );
 
-    $columns = array('Rel', 'Len', 'Und', 'Diff');
+    $columns = array('User', 'Article', 'Rel', 'Len', 'Und', 'Diff', 'Iteration');
 
-    $callback = function() use($user, $columns) {
-        $file = fopen('php://output', 'w');
-        fputcsv($file, $columns);
+    $handle = fopen($fileName, 'w');
 
-        foreach ($user->answers as $answer) {
-            $row['Rel']  = $answer->relevance;
-            $row['Len']    = $answer->length;
-            $row['Und']    = $answer->understandability;
-            $row['Diff']  = $answer->difference;
+    fputcsv($handle, $columns);
 
-            fputcsv($file, array($row['Rel'], $row['Len'], $row['Und'], $row['Diff']));
+    foreach ($users as $user) {
+        foreach ($user->answers()->where('iteration_id', $request->iteration)->get() as $answer) {
+            $row['User']  = $user->token;
+            $row['Article']  = $answer->pivot->article_id;
+            $row['Rel']  = $answer->pivot->relevance;
+            $row['Len']    = $answer->pivot->length;
+            $row['Und']    = $answer->pivot->understandability;
+            $row['Diff']  = $answer->pivot->difference;
+            $row['Iteration'] = $request->iteration;
+
+            fputcsv($handle, $row);
         }
+    }
 
-        fclose($file);
-    };
+    fclose($handle);
 
-    return response()->stream($callback, 200, $headers);
+    return r::download($fileName, $fileName, $headers);
 })->middleware(ValidateAdminIP::class);
