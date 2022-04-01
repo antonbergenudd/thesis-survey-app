@@ -17,6 +17,7 @@ class CreateUserProfilesTable extends Migration
             $table->id();
             $table->timestamps();
             $table->unsignedBigInteger('user_id');
+            $table->string('token');
             $table->text('profile');
             $table->integer('iteration_id');
         });

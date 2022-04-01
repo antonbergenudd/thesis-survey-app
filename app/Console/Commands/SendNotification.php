@@ -12,7 +12,7 @@ class SendNotification extends Command
      *
      * @var string
      */
-    protected $signature = 'survey-app:send-notification';
+    protected $signature = 'survey-app:notify';
 
     /**
      * The console command description.
@@ -38,9 +38,9 @@ class SendNotification extends Command
      */
     public function handle()
     {
-        Notify::dispatch();
-
         dump('Notifying all users..');
+        
+        Notify::dispatch();
         
         return 0;
     }

@@ -166,6 +166,7 @@ class User extends Authenticatable
         // Add updated user profile log
         $userProfile = new UserProfile;
         $userProfile->user_id = $user->id;
+        $userProfile->token = $user->token;
         $userProfile->profile = json_encode($user_profile);
         $userProfile->iteration_id = $iteration;
         $userProfile->save();

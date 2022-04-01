@@ -34,13 +34,19 @@ class Notify implements ShouldQueue
     public function handle()
     {
         foreach(User::all() as $user) {
-            $details = [
-                'title' => 'Glöm inte att utvärdera artiklarna.',
-                'body' => 'Din kod är: '.$user->token,
-                'link' => env('APP_URL').'?token='.$user->token
-            ];
-           
-            Mail::to($user->email)->send(new NotifyMail($details));
+            if($user->email) {
+                $details = [
+                    'title' => 'Glöm inte att utvärdera artiklarna.',
+                    'body' => 'Din kod är: '.$user->token,
+                    'link' => env('APP_URL').'?token='.$user->token
+                ];
+               
+                Mail::to($user->email)->send(new NotifyMail($details));
+
+                dump("Notified ".$user->email);
+            }
         }
+
+        dump('Done.');
     }
 }

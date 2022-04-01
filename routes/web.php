@@ -175,7 +175,7 @@ Route::get('/explore/articles', function (Request $request) {
 })->middleware(ValidateAdminIP::class);
 
 Route::get('/export/answers', function (Request $request) {
-    $fileName = $request->iteration.'_answers.csv';
+    $fileName = 'answers.csv';
     $users = User::all();
 
     $headers = array(
