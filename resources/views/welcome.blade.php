@@ -94,9 +94,11 @@
                 </div>
                 @endforeach
                 
+                <h1 id="feedback" style="color:white; display:none;">Tack för inskickat svar :)</h1>
                 <button data-register-resp class="button" style="cursor:pointer; margin:2rem 0; width:20rem; height:5rem;;">Skicka in svar</button>
             @endif
         </div>
+
     </body>
 
     <script>
@@ -107,6 +109,7 @@
         
         $('[data-register-resp]').on('click', (e) => {
             $(e.target).hide();
+            $('#feedback').show();
 
             let articles = $('[data-article]');
             let articleData = []
