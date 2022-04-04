@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Models\Article;
 use App\Models\User;
+use App\Models\UserProfile;
 use \App\Http\Middleware\EnsureTokenIsValid;
 use \App\Http\Middleware\ValidateAdminIP;
 use \Illuminate\Http\Response;
@@ -57,15 +58,23 @@ Route::get('/', function (Request $request) {
 
 Route::post('/submit-answer', function (Request $request) {
     $user = User::where('token', $request->token)->first();
-    
+
+    // Prevent duplicates
     $article_ids = [];
     foreach($request->data as $article) {
-        $user->answers()->attach($article['id'], ['relevance' => $article['rel'], 'understandability' => $article['und'], 'length' => $article['len']]);
-        $article_ids[] = $article['id'];
+        if(! $user->answers()->where('article_id', $article['id'])->exists()) {
+            $user->answers()->attach($article['id'], ['relevance' => $article['rel'], 'understandability' => $article['und'], 'length' => $article['len']]);
+            $article_ids[] = $article['id'];
+        }
     }
 
-    // Update profile with new answers
-    return $user->updateProfile($article_ids);
+    if(count($article_ids) > 0) {
+        // Update profile with new answers
+        return $user->updateProfile($article_ids);
+    }
+
+    return 0;
+
 })->middleware(EnsureTokenIsValid::class);
 
 
