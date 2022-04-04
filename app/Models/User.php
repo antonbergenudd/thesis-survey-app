@@ -18,7 +18,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'token',
-        'profile'
+        'profile',
+        'last_accessed'
     ];
 
     /**

@@ -9,6 +9,7 @@ use \App\Http\Middleware\ValidateAdminIP;
 use \Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use App\Jobs\Notify;
+use Carbon\Carbon;
 use Response as r;
 use App\Charts\LabelDistChart;
 
@@ -33,12 +34,9 @@ Route::get('/login', ['as' => 'login', 'uses' => function () {
 
 Route::post('/login', function (Request $request) {
     $user = User::where('token', $request->token)->first();
-    if(isset($user)) {
-        $user->last_accessed = date("Y-m-d");
-        $user->save();
-
+    
+    if(isset($user)) 
         return $user->token;
-    }
 
     return response()->json(['errors' => ['token' => ['The token is invalid.']]], 422);
 });
@@ -52,6 +50,10 @@ Route::get('/', function (Request $request) {
     $articles = Article::whereDoesntHave('users', function($q) use ($request) {
         $q->where('user_id', User::where('token', $request->token)->first()->id);
     })->get();
+
+    $user = User::where('token', $request->token)->first();
+    $user->last_accessed = Carbon::now();
+    $user->save();
 
     return view('welcome')->with('articles', $articles);
 })->middleware(EnsureTokenIsValid::class);

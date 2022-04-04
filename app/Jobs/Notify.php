@@ -43,7 +43,7 @@ class Notify implements ShouldQueue
         foreach($notAnsweredUsers as $user) {
             if(isset($user->email) && !$user->email == '') {
                 $details = [
-                    'title' => 'Det har nu kommit nya artiklar till hemsidan. ',
+                    'title' => 'Det har nu anlänt nya artiklar på hemsidan.',
                     'body' => 'Din kod är: '.$user->token,
                     'link' => env('APP_URL').'?token='.$user->token
                 ];

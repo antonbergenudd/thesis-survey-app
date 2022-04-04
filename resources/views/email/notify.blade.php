@@ -8,7 +8,7 @@
     <p>{{ $details['body'] }}</p>
     <p>Här är länken till sidan med din kod redan insatt.</p>
     <h3><a href="{{$details['link']}}" target="_blank">{{ $details['link'] }}</a></h3>
-    <p>Stor tack för hjälpen.</p>
+    <p>Stort tack för hjälpen.</p>
     <p>Mvh<br>Anton Bergenudd</p>
 </body>
 </html>
