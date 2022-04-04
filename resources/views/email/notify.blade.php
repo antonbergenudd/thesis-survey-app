@@ -4,13 +4,11 @@
     <title>Survey</title>
 </head>
 <body>
-    <h1>{{ $details['title'] }}</h1>
-    <h3>{{ $details['body'] }}</h3>
-
-    <br>
-    <h3>Länk till sida.</h3>
-    <p>{{ $details['link'] }}</p>
-    <br>
+    <h3>{{ $details['title'] }}</h3>
+    <p>{{ $details['body'] }}</p>
+    <p>Här är länken till sidan med din kod redan insatt.</p>
+    <h3><a href="{{$details['link']}}" target="_blank">{{ $details['link'] }}</a></h3>
     <p>Stor tack för hjälpen.</p>
+    <p>Mvh<br>Anton Bergenudd</p>
 </body>
 </html>

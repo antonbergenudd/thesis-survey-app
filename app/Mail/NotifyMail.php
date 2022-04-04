@@ -30,7 +30,7 @@ class NotifyMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Påminnelse om att utvärdare artiklar.')
+        return $this->subject('Påminnelse om att utvärdera Antons artiklar.')
                     ->view('email.notify');
     }
 }

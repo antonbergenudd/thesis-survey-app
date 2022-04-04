@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\User;
+use App\Models\Article;
 use App\Mail\NotifyMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Bus\Queueable;
@@ -33,10 +34,16 @@ class Notify implements ShouldQueue
      */
     public function handle()
     {
-        foreach(User::all() as $user) {
-            if($user->email) {
+        $iteration = Article::orderBy('iteration_id', 'desc')->first()->iteration_id;
+
+        $notAnsweredUsers = User::whereDoesntHave('answers', function($q) use ($iteration) {
+            $q->where('iteration_id', $iteration);
+        })->get();
+
+        foreach($notAnsweredUsers as $user) {
+            if(isset($user->email) && !$user->email == '') {
                 $details = [
-                    'title' => 'Glöm inte att utvärdera artiklarna.',
+                    'title' => 'Det har nu kommit nya artiklar till hemsidan. ',
                     'body' => 'Din kod är: '.$user->token,
                     'link' => env('APP_URL').'?token='.$user->token
                 ];
