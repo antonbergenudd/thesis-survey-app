@@ -39,7 +39,7 @@
         </style>
     </head>
     <body class="antialiased">
-        <div style="display: flex; justify-content:center; align-items:center; flex-direction:column;" class="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div style="display: flex; justify-content:center; align-items:center; flex-direction:column; background-color:rgb(26,32,44);" class="min-h-screen">
             @if(count($articles) == 0)
                 <h1 style="color:white">Tack för hjälpen!</h1>
                 <p style="color:white;">Du har inga fler artiklar idag.</p>
