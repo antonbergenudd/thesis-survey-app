@@ -73,7 +73,7 @@ class User extends Authenticatable
      */
     private function calculateUserProfile($user, $articles) {
         $num_topics = count(json_decode($articles->first()->label_dist)); # Calc number of topics
-        $iteration = $articles->first()->iteration_id; # Set iteration number
+        $iteration = $articles->sortByDesc('iteration_id')->first()->iteration_id; # Set iteration number
         $total_num_answers = count($articles);
         $user_profile = $user->latestProfile(); # Retrieve latest user profile
         
@@ -164,12 +164,14 @@ class User extends Authenticatable
         }
 
         // Add updated user profile log
-        $userProfile = new UserProfile;
-        $userProfile->user_id = $user->id;
-        $userProfile->token = $user->token;
-        $userProfile->profile = json_encode($user_profile);
-        $userProfile->iteration_id = $iteration;
-        $userProfile->save();
+        if (!UserProfile::where('user_id', $user->id)->where('iteration_id', $iteration)->exists()) {
+            $userProfile = new UserProfile;
+            $userProfile->user_id = $user->id;
+            $userProfile->token = $user->token;
+            $userProfile->profile = json_encode($user_profile);
+            $userProfile->iteration_id = $iteration;
+            $userProfile->save();
+        }
 
         return "Distribution summary: ".(array_sum($user_profile) * 100)."%";
     }

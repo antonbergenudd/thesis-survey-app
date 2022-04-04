@@ -106,6 +106,8 @@
         });
         
         $('[data-register-resp]').on('click', (e) => {
+            $(e.target).hide();
+
             let articles = $('[data-article]');
             let articleData = []
             for(let i = 0; i < articles.length; i++) {
@@ -131,7 +133,6 @@
 
             $.post('/submit-answer', {"data": articleData, "token": token}).then(() => {
                 window.location.reload();
-                $(e.target).hide();
             });
         });
     </script>
