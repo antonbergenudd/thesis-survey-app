@@ -46,44 +46,18 @@ class User extends Authenticatable
         return $this->hasMany(UserProfile::class)->get()->sortByDesc('iteration_id')->first();
     }
 
-    /**
-    * Helper function to print summary of distribution
-    */
-    private function printBalance($user_profile, $b, $check) {
-        $userArraySum = array_sum($user_profile);
-
-        if($check) {
-            if(bccomp($userArraySum, 1.0, 2) <> 0) {
-                if($b) {
-                    var_dump("Check before sum: ". $userArraySum);
-                } else {
-                    var_dump("Check after sum: ". $userArraySum);
-                }
-            }
-        } else {
-            if($b) {
-                var_dump("Before sum: ". $userArraySum);
-            } else {
-                var_dump("After sum: ". $userArraySum);
-            }
-        }
-    }
-
-    /**
-     * Helper function to calculate updated user profile
-     */
-    private function calculateUserProfile($user, $articles) {
+    public function updateProfile($articles) {
         $num_topics = count(json_decode($articles->first()->label_dist)); # Calc number of topics
         $iteration = $articles->sortByDesc('iteration_id')->first()->iteration_id; # Set iteration number
         $total_num_answers = count($articles);
-        $user_profile = $user->latestProfile(); # Retrieve latest user profile
+        $user_profile = $this->latestProfile(); # Retrieve latest user profile
         
         # Init unit distributed user profile if not set before
         if (! isset($user_profile))
             $user_profile = array_fill(0, $num_topics, (100/$num_topics)/100);
         else
             $user_profile = json_decode($user_profile->profile);
-            
+        
         // Loop all articles and compute average label dist for user profile
         foreach($articles as $i => $article) {
 
@@ -137,7 +111,7 @@ class User extends Authenticatable
                         $surp = ($user_profile[$key] - 1);
 
                         // Retrieve first value which can add surplus from normalized value
-                        $compatibleValues = array_filter($user_profile, function($value, $key) use($surp, $j) {
+                        $compatibleValues = array_filter($user_profile, function($value, $j) use($surp, $key) {
                             return $value + $surp < 1.0 && $key != $j;
                         }, ARRAY_FILTER_USE_BOTH);
                         $compatIndex = array_keys($compatibleValues, min($compatibleValues))[0];
@@ -148,8 +122,8 @@ class User extends Authenticatable
                         $surp = (0 - $user_profile[$key]);
 
                         // Retrieve first value which can remove surplus from normalized value
-                        $compatibleValues = array_filter($user_profile, function($value, $key) use ($surp, $j) {
-                            return $value - $surp > 0 && $key != $j;
+                        $compatibleValues = array_filter($user_profile, function($value, $j) use ($surp, $key) {
+                            return $value - $surp >= 0 && $key != $j;
                         }, ARRAY_FILTER_USE_BOTH);
                         $compatIndex = array_keys($compatibleValues, min($compatibleValues))[0];
                         $user_profile[$compatIndex] -= $surp;
@@ -165,10 +139,10 @@ class User extends Authenticatable
         }
 
         // Add updated user profile log
-        if (!UserProfile::where('user_id', $user->id)->where('iteration_id', $iteration)->exists()) {
+        if (!UserProfile::where('user_id', $this->id)->where('iteration_id', $iteration)->exists()) {
             $userProfile = new UserProfile;
-            $userProfile->user_id = $user->id;
-            $userProfile->token = $user->token;
+            $userProfile->user_id = $this->id;
+            $userProfile->token = $this->token;
             $userProfile->profile = json_encode($user_profile);
             $userProfile->iteration_id = $iteration;
             $userProfile->save();
@@ -177,19 +151,7 @@ class User extends Authenticatable
         return "Distribution summary: ".(array_sum($user_profile) * 100)."%";
     }
 
-    public function updateProfile($article_ids) {
-        // Get all rated articles
-        $user = User::find($this->id);
-        $rated_articles = $user->answers()->whereIn('article_id', $article_ids)->get();
-
-        return $this->calculateUserProfile($user, $rated_articles);
-    }
-
     public function getProfile($iteration) {
-        // Get all rated articles
-        $user = User::find($this->id);
-
-        // Return profile
-        return UserProfile::where('iteration_id', $iteration)->where('user_id', $user->id)->first();
+        return UserProfile::where('iteration_id', $iteration)->where('user_id', $this->id)->first();
     }
 }

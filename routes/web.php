@@ -66,16 +66,17 @@ Route::post('/submit-answer', function (Request $request) {
     foreach($request->data as $article) {
         if(! $user->answers()->where('article_id', $article['id'])->exists()) {
             $user->answers()->attach($article['id'], ['relevance' => $article['rel'], 'understandability' => $article['und'], 'length' => $article['len']]);
+
             $article_ids[] = $article['id'];
         }
     }
 
-    if(count($article_ids) > 0) {
-        // Update profile with new answers
-        return $user->updateProfile($article_ids);
-    }
+    // Exit if no article answers were found
+    if(count($article_ids) == 0)
+        return 0;
 
-    return 0;
+    // Update profile with new answers
+    return $user->updateProfile($user->answers()->whereIn('article_id', $article_ids)->get());
 
 })->middleware(EnsureTokenIsValid::class);
 
