@@ -86,7 +86,9 @@ Route::post('/submit-answer', function (Request $request) {
 /******************************************************************************************************************/
 
 Route::get('/explore', function (Request $request) {
-    $users = User::all();
+    $users = isset($request->iteration) ? User::whereHas('profile', function($q) use ($request) {
+        $q->where('iteration_id', $request->iteration);
+    })->get() : User::all();
     
     foreach($users as $user) {
         // Get all rated articles
