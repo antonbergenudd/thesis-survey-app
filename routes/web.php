@@ -111,25 +111,30 @@ Route::get('/explore', function (Request $request) {
 
             # https://v6.charts.erik.cat/getting_started.html#screenshots
             # consoletvs/charts:6.*
-            $data = isset($request->iteration) 
+            $profileData = isset($request->iteration) 
                 ? $user->iterationProfile($request->iteration)
                 : $user->latestProfile();
-            $data = json_decode($data->profile);
-            $labelDistChart = new LabelDistChart;
-            $labelDistChart->labels(array_keys($data));
-            $labelDistChart->options([
-                    'scales' => [
-                        'yAxes' => [
-                            [
-                                'ticks' => [
-                                    'max' => 1.0
+            
+            if(isset($profileData)) {
+                $profile = json_decode($profileData->profile);
+                $labelDistChart = new LabelDistChart;
+                $labelDistChart->labels(array_keys($profile));
+                $labelDistChart->options([
+                        'scales' => [
+                            'yAxes' => [
+                                [
+                                    'ticks' => [
+                                        'max' => 1.0
+                                    ],
                                 ],
                             ],
                         ],
-                    ],
-                ]);
-            $labelDistChart->dataset('Labels by distribution', 'bar', $data);
-            $user->chart = $labelDistChart;
+                    ]);
+                $labelDistChart->dataset('Labels by distribution', 'bar', $profile);
+                $user->chart = $labelDistChart;
+            } else {
+                $user->chart = null;
+            }
         }
     }
 
