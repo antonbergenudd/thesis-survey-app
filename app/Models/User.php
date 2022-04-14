@@ -91,6 +91,10 @@ class User extends Authenticatable
                 // Add weighted difference (Is deducted if negative)
                 $sum_weighted_diff[$j] += ($diff != 0 ? $diff * $scale[$article->pivot->relevance - 1] * $gradient : 0);
             }
+
+            // Save difference for each article for each iteration
+            $article->pivot->difference = $total_diff;
+            $article->pivot->save();
         }
 
         // Take average of all article differences
