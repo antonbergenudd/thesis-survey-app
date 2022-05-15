@@ -18,9 +18,7 @@ class ValidateAdminIP
     {
         $ip_addresses = [
             '127.0.0.1',
-            '83.249.252.205',
-            '85.242.198.117',
-            '94.191.152.174'
+            '31.208.187.247'
         ];
 
         if(! in_array($request->ip(), $ip_addresses)) {
