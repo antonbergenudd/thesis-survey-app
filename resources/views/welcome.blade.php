@@ -66,6 +66,7 @@
                 @foreach($articles as $article)
                 <div data-article="{{$article->id}}" data-article-iter="{{$article->iteration_id}}" style="max-width: 80vw; padding:2rem; margin:1rem; border-radius:10px; background-color:white;">
                     <h1 style="margin-top:0;">{{ $article->title }}</h1>
+                    <p>{{ $article->content }}</p>
                     <p>{{ $article->sum_content }}</p>
                     <div style="display: flex; flex-direction:column;">
                         <b>Texten var relevant för mig.</b>

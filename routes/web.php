@@ -94,20 +94,20 @@ Route::get('/explore', function (Request $request) {
         // Get all rated articles
         $articles = isset($request->iteration) ? $user->answers()->get()->where('iteration_id', $request->iteration) : $user->answers;
 
-        if(count($articles) > 0) {
+        // if(count($articles) > 0) {
             // Loop all articles and compute average label dist for user profile
             $col_under = 0; $col_len = 0; $col_rel = 0;
-            foreach($articles as $i => $article) {
-                // Get overall values
-                $col_under += $article->pivot->understandability;
-                $col_len += $article->pivot->length;
-                $col_rel += $article->pivot->relevance;
-            }
+            // foreach($articles as $i => $article) {
+            //     // Get overall values
+            //     $col_under += $article->pivot->understandability;
+            //     $col_len += $article->pivot->length;
+            //     $col_rel += $article->pivot->relevance;
+            // }
 
             // Get average percentage over all articles
-            $user->understandability = round($col_under / count($articles), 3);
-            $user->length = round($col_len / count($articles), 3);
-            $user->relevance = round($col_rel / count($articles), 3);
+            // $user->understandability = round($col_under / count($articles), 3);
+            // $user->length = round($col_len / count($articles), 3);
+            // $user->relevance = round($col_rel / count($articles), 3);
 
             # https://v6.charts.erik.cat/getting_started.html#screenshots
             # consoletvs/charts:6.*
@@ -135,7 +135,7 @@ Route::get('/explore', function (Request $request) {
             } else {
                 $user->chart = null;
             }
-        }
+        // }
     }
 
     return view('explore')->with('users', $users)->with('iteration', $request->iteration);
