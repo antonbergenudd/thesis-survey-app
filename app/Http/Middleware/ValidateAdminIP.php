@@ -17,8 +17,7 @@ class ValidateAdminIP
     public function handle(Request $request, Closure $next)
     {
         $ip_addresses = [
-            '127.0.0.1',
-            '31.208.187.247'
+            // Add admin IP here
         ];
 
         if(! in_array($request->ip(), $ip_addresses)) {
